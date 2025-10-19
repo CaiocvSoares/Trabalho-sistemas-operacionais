@@ -25,7 +25,7 @@ public class Main {
                 BufferedWriter escritor = Files.newBufferedWriter(caminhoSaida, StandardCharsets.UTF_8)
             ){
                 String linha;
-                Execução objeto = new Execução();
+                Escalonador objeto = new Escalonador();
                 while ((linha = leitor.readLine()) != null) {
                    // objeto.adicionarInstrucao(linha);
                 }
