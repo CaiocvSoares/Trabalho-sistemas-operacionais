@@ -3,6 +3,8 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.List;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -25,9 +27,19 @@ public class Main {
                 BufferedWriter escritor = Files.newBufferedWriter(caminhoSaida, StandardCharsets.UTF_8)
             ){
                 String linha;
+                String [] linhas=new String [2]; 
+                int contador = 0;
+                List<Processador> processos =  new ArrayList<>();
                 Escalonador objeto = new Escalonador();
                 while ((linha = leitor.readLine()) != null) {
-                   // objeto.adicionarInstrucao(linha);
+                    if  (contador == 0){
+                        objeto.quantum = resultado;
+                        contador++;
+                    }
+                    else{
+                        //
+                    }
+                    
                 }
                 resultado = 0;//objeto.calculandoCiclos();
                 escritor.write(String.valueOf(resultado)); 
