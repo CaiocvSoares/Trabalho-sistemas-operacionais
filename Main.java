@@ -17,7 +17,9 @@ public class Main {
             String numero = String.format("%02d", i);
             String nomeEntrada = "TESTE-" + numero + ".txt";
             String nomeSaida = "TESTE-" + numero + "-RESULTADO.txt";
-            int resultado = 0;
+
+            String resultados = "";
+            int quantum = 0;
 
             Path caminhoEntrada = Paths.get(diretorio, nomeEntrada);
             Path caminhoSaida = Paths.get(diretorio, nomeSaida);
@@ -27,23 +29,47 @@ public class Main {
                 BufferedWriter escritor = Files.newBufferedWriter(caminhoSaida, StandardCharsets.UTF_8)
             ){
                 String linha;
-                String [] linhas=new String [2]; 
+                String [] linhas = new String [2]; 
                 int contador = 0;
                 List<Processador> processos =  new ArrayList<>();
                 Escalonador objeto = new Escalonador();
                 while ((linha = leitor.readLine()) != null) {
                     if  (contador == 0){
-                        objeto.quantum = resultado;
+                        quantum = Integer.parseInt(linha);
                         contador++;
                     }
                     else{
-                        //
+                        linhas = linha.split(" ");
+                        Processador process = new Processador ( Integer.parseInt(linhas[0]), Integer.parseInt(linhas[1]));
+                        processos.add(process);
                     }
                     
                 }
-                resultado = 0;//objeto.calculandoCiclos();
-                escritor.write(String.valueOf(resultado)); 
-                escritor.newLine();
+                for(int l = 0; l < 4; l++){
+                    switch (l) {
+                            case 0:
+                                resultados = objeto.calcularFIFO(processos);
+                                escritor.write(String.valueOf(resultados)); 
+                                escritor.newLine();
+                                break;
+                            case 1:
+                                resultados = objeto.calcularSJF(processos);
+                                escritor.write(String.valueOf(resultados)); 
+                                escritor.newLine();
+                                break;
+                            case 2:
+                                resultados = objeto.calcularSRT(processos);
+                                escritor.write(String.valueOf(resultados)); 
+                                escritor.newLine();
+                                break;
+                            default:
+                                resultados = objeto.calcularRR(processos, quantum);
+                                escritor.write(String.valueOf(resultados)); 
+                                escritor.newLine();
+                                break;
+                    }        
+                }
+                
                 System.out.println("Gerado: " + nomeSaida);
 
             } catch (IOException e) {

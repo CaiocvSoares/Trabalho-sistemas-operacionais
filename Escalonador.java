@@ -9,13 +9,17 @@ public class Escalonador {
     float mediatempresp, mediatempesp, mediaturn;
     public int quantum = 0;
 
-    public void calcularFIFO(List<Processador> processos) {
-        processos.sort(Comparator.comparingInt(p -> p.tChegada));
+    public String calcularFIFO(List<Processador> processos) {
+        List<Processador> copia = new ArrayList<>();
+        for (Processador p : processos)
+            copia.add(p.clone());
+        
+        copia.sort(Comparator.comparingInt(p -> p.tChegada));
 
         float somaResp = 0, somaEsp = 0, somaTurn = 0;
         int tempoAtual = 0;
 
-        for (Processador p : processos) {
+        for (Processador p : copia) {
             p.tInicio = Math.max(tempoAtual, p.tChegada);
             p.tFim = p.tInicio + p.tDuracao;
 
@@ -29,28 +33,34 @@ public class Escalonador {
 
             tempoAtual = p.tFim;
         }
-        //medias
-        mediatempresp = somaResp / processos.size();
-        mediatempesp = somaEsp / processos.size();
-        mediaturn = somaTurn / processos.size();
+
+        mediatempresp = somaResp / copia.size();
+        mediatempesp = somaEsp / copia.size();
+        mediaturn = somaTurn / copia.size();
+        return String.format("%.3f %.3f %.3f", mediatempresp, mediatempesp, mediaturn);
     }
 
-    public void calcularSJF(List<Processador> processos) {
-        processos.sort(Comparator.comparingInt(p -> p.tChegada));
+    public String calcularSJF(List<Processador> processos) {
+        List<Processador> copia = new ArrayList<>();
+        for (Processador p : processos)
+            copia.add(p.clone());
+        
+        copia.sort(Comparator.comparingInt(p -> p.tChegada));
 
         List<Processador> prontos = new ArrayList<>();
         int tempoAtual = 0;
         float somaResp = 0, somaEsp = 0, somaTurn = 0;
 
-        while (!processos.isEmpty() || !prontos.isEmpty()) {
-            if (!processos.isEmpty() && processos.get(0).tChegada <= tempoAtual) {
-                prontos.add(processos.remove(0));
+        while (!copia.isEmpty() || !prontos.isEmpty()) {
+            while (!copia.isEmpty() && copia.get(0).tChegada <= tempoAtual) {
+                prontos.add(copia.remove(0));
             }
 
             if (prontos.isEmpty()) {
-                tempoAtual = processos.get(0).tChegada;
+                tempoAtual = copia.get(0).tChegada;
                 continue;
             }
+
             prontos.sort(Comparator.comparingInt(p -> p.tDuracao));
             Processador p = prontos.remove(0);
 
@@ -59,17 +69,23 @@ public class Escalonador {
             tempoAtual = p.tFim;
 
             somaResp += p.tInicio - p.tChegada;
-            somaEsp += p.tInicio - p.tChegada;
+            somaEsp += p.tFim - p.tChegada - p.tDuracao;
             somaTurn += p.tFim - p.tChegada;
         }
 
-        mediatempresp = somaResp / processos.size();
-        mediatempesp = somaEsp / processos.size();
-        mediaturn = somaTurn / processos.size();
+        int n = processos.size();
+        mediatempresp = somaResp / n;
+        mediatempesp = somaEsp / n;
+        mediaturn = somaTurn / n;
+        return String.format("%.3f %.3f %.3f", mediatempresp, mediatempesp, mediaturn);
     }
 
-    public void calcularSRT(List<Processador> processos) {
-        processos.sort(Comparator.comparingInt(p -> p.tChegada));
+    public String calcularSRT(List<Processador> processos) {
+        List<Processador> copia = new ArrayList<>();
+        for (Processador p : processos)
+            copia.add(p.clone());
+        
+        copia.sort(Comparator.comparingInt(p -> p.tChegada));
 
         PriorityQueue<Processador> fila = new PriorityQueue<>(
                 Comparator.comparingInt(p -> p.tRestante));
@@ -77,57 +93,53 @@ public class Escalonador {
         int tempoAtual = 0, index = 0;
         float somaResp = 0, somaEsp = 0, somaTurn = 0;
 
-        // enquanto houver processos a chegar ou na fila
-        while (!fila.isEmpty() || index < processos.size()) {
-            
-            while (index < processos.size() && processos.get(index).tChegada <= tempoAtual) {
-                fila.add(processos.get(index));
+        while (!fila.isEmpty() || index < copia.size()) {
+            while (index < copia.size() && copia.get(index).tChegada <= tempoAtual) {
+                fila.add(copia.get(index));
                 index++;
             }
 
             if (fila.isEmpty()) {
-                // se nenhum processo chegou ainda, avança o tempo
-                tempoAtual = processos.get(index).tChegada;
+                tempoAtual = copia.get(index).tChegada;
                 continue;
             }
 
             Processador p = fila.poll();
 
-            
             if (p.tInicio == -1) {
                 p.tInicio = tempoAtual;
                 somaResp += p.tInicio - p.tChegada;
             }
 
-            
             p.tRestante--;
             tempoAtual++;
 
-            
-            while (index < processos.size() && processos.get(index).tChegada <= tempoAtual) {
-                fila.add(processos.get(index));
+            while (index < copia.size() && copia.get(index).tChegada <= tempoAtual) {
+                fila.add(copia.get(index));
                 index++;
             }
 
             if (p.tRestante > 0) {
                 fila.add(p);
             } else {
-                // processo terminou
                 p.tFim = tempoAtual;
                 somaEsp += p.tFim - p.tChegada - p.tDuracao;
                 somaTurn += p.tFim - p.tChegada;
             }
         }
 
-        mediatempesp = somaEsp / processos.size();
-        mediatempresp = somaResp / processos.size();
-        mediaturn = somaTurn / processos.size();
+        int n = processos.size();
+        mediatempresp = somaResp / n;
+        mediatempesp = somaEsp / n;
+        mediaturn = somaTurn / n;
+        return String.format("%.3f %.3f %.3f", mediatempresp, mediatempesp, mediaturn);
     }
 
-    public void calcularRR(List<Processador> processos, int quantum) {
+    public String calcularRR(List<Processador> processos, int quantum) {
         List<Processador> copia = new ArrayList<>();
         for (Processador p : processos)
             copia.add(p.clone());
+        
         copia.sort(Comparator.comparingInt(p -> p.tChegada));
 
         Queue<Processador> fila = new LinkedList<>();
@@ -170,8 +182,10 @@ public class Escalonador {
             }
         }
 
-        mediatempresp = somaResp / processos.size();
-        mediatempesp = somaEsp / processos.size();
-        mediaturn = somaTurn / processos.size();
+        int n = processos.size();
+        mediatempresp = somaResp / n;
+        mediatempesp = somaEsp / n;
+        mediaturn = somaTurn / n;
+        return String.format("%.3f %.3f %.3f", mediatempresp, mediatempesp, mediaturn);
     }
 }
